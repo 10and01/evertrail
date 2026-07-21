@@ -1,14 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Home, Map, Share2, Trophy } from 'lucide-react';
+import { BookOpen, Footprints, Images, Map, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const links = [
-  { to: '/', label: '大厅', icon: Home },
-  { to: '/journal', label: '记录', icon: BookOpen },
-  { to: '/map', label: '地图', icon: Map },
-  { to: '/chapters', label: '章节', icon: BookOpen },
-  { to: '/growth', label: '成长', icon: Trophy },
-  { to: '/export', label: '导出', icon: Share2 },
+  { to: '/', label: '今天', icon: Footprints },
+  { to: '/map', label: '旅程', icon: Map },
+  { to: '/studio', label: '工坊', icon: BookOpen },
+  { to: '/gallery', label: '展厅', icon: Images },
+  { to: '/settings', label: '设置', icon: Settings },
 ];
 
 export function MobileNav() {
@@ -18,7 +17,7 @@ export function MobileNav() {
       <div className="flex justify-around items-center h-14">
         {links.map((link) => {
           const Icon = link.icon;
-          const active = pathname === link.to;
+          const active = link.to === '/' ? pathname === '/' : pathname.startsWith(link.to);
           return (
             <Link
               key={link.to}

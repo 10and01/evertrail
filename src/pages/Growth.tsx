@@ -1,88 +1,35 @@
+import { useMemo } from 'react';
+import { Compass, Feather, Layers3, Sparkles } from 'lucide-react';
 import { useGameStore } from '@/store/useGameStore';
-import { AchievementBadge } from '@/components/AchievementBadge';
-import { ACHIEVEMENTS } from '@/lib/achievementEngine';
-import { PixelPanel } from '@/components/ui/PixelPanel';
+import { buildLifeGraph } from '@/lib/lifeGraphEngine';
+import { collectMotifs, normalizeSignals } from '@/lib/narrativeEngine';
 import { MOODS } from '@/lib/moods';
-import { BarChart3, BookOpen, Calendar, Sparkles } from 'lucide-react';
 
 export default function Growth() {
-  const profile = useGameStore((s) => s.profile);
-  const entries = useGameStore((s) => s.entries);
-  const unlocked = useGameStore((s) => s.unlockedAchievements);
-
-  if (!profile) return null;
-
-  const totalWords = entries.reduce((sum, e) => sum + e.text.length, 0);
-  const avgWords = entries.length ? Math.round(totalWords / entries.length) : 0;
-  const moodCounts: Record<string, number> = {};
-  entries.forEach((e) => {
-    moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1;
-  });
+  const entries = useGameStore((state) => state.entries);
+  const progress = useGameStore((state) => state.journeyProgress);
+  const graph = useMemo(() => buildLifeGraph(entries), [entries]);
+  const motifs = collectMotifs(entries).slice(0, 10);
+  const valueCounts = new Map<string, number>();
+  for (const entry of entries) {
+    for (const value of normalizeSignals(entry).values) valueCounts.set(value, (valueCounts.get(value) ?? 0) + 1);
+  }
+  const values = Array.from(valueCounts, ([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
-      <h2 className="font-display text-2xl text-et-gold">成长与成就</h2>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Sparkles} label="等级" value={`Lv.${profile.level}`} />
-        <StatCard icon={BookOpen} label="记录数" value={`${entries.length}`} />
-        <StatCard icon={BarChart3} label="总字数" value={`${totalWords}`} />
-        <StatCard icon={Calendar} label="平均字数" value={`${avgWords}`} />
-      </div>
-
-      <PixelPanel>
-        <h3 className="font-display text-lg mb-3">心情分布</h3>
-        {Object.keys(moodCounts).length === 0 ? (
-          <p className="text-et-muted text-sm">暂无数据</p>
-        ) : (
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(moodCounts).map(([mood, count]) => {
-              const config = MOODS[mood as keyof typeof MOODS];
-              return (
-                <div
-                  key={mood}
-                  className="flex items-center gap-2 px-3 py-1 border-2"
-                  style={{ borderColor: config.color, color: config.color }}
-                >
-                  <span>{config.emoji}</span>
-                  <span className="font-number text-lg">{count}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </PixelPanel>
-
-      <PixelPanel>
-        <h3 className="font-display text-lg mb-3">徽章墙</h3>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {ACHIEVEMENTS.map((a) => (
-            <AchievementBadge
-              key={a.id}
-              achievement={a}
-              unlocked={unlocked.includes(a.id)}
-            />
-          ))}
-        </div>
-      </PixelPanel>
+    <div className="page-stack pb-24 md:pb-8">
+      <header className="page-hero compact-hero"><div><p className="eyebrow">Life patterns</p><h1>人生线索</h1><p>这里没有好坏分数，只呈现哪些人物、地点、价值和意象正在你的生活中反复出现。</p></div></header>
+      <section className="gallery-stats">
+        <div className="storybook-panel"><Layers3 /><strong>{graph.seasons.length}</strong><span>个人生阶段</span></div>
+        <div className="storybook-panel"><Compass /><strong>{graph.threads.length}</strong><span>条人生线索</span></div>
+        <div className="storybook-panel"><Feather /><strong>{progress.completedSceneIds.length}</strong><span>段当下理解</span></div>
+      </section>
+      <section className="growth-pattern-grid">
+        <article className="storybook-panel"><p className="eyebrow">People & places</p><h2>谁和哪里构成了这些年</h2><div className="pattern-list">{graph.entities.filter((entity) => entity.type === 'person' || entity.type === 'place').slice(0, 12).map((entity) => <div key={entity.id}><span>{entity.type === 'person' ? '人' : '地'}</span><strong>{entity.label}</strong><small>{entity.entryIds.length} 次出现</small></div>)}</div></article>
+        <article className="storybook-panel"><p className="eyebrow">Values</p><h2>你正在靠近的价值</h2><div className="value-orbit">{values.length ? values.map((value, index) => <span key={value.label} style={{ fontSize: `${Math.min(1.7, .85 + value.count * .16)}rem`, opacity: Math.max(.45, 1 - index * .06) }}>{value.label}</span>) : <p>在记录室里补充“这段经历靠近哪个价值”，这里会逐渐形成你的价值轨迹。</p>}</div></article>
+      </section>
+      <section className="storybook-panel"><p className="eyebrow">Emotional weather</p><h2 className="growth-title">情绪只是天气，不是评价</h2><div className="emotion-weather">{Object.entries(MOODS).map(([key, mood]) => { const count = entries.filter((entry) => entry.mood === key).length; return <div key={key} style={{ '--mood-color': mood.color } as React.CSSProperties}><span>{mood.emoji}</span><strong>{mood.label}</strong><i style={{ height: `${Math.max(8, count * 12)}px` }} /><small>{count} 段</small></div>; })}</div></section>
+      <section className="storybook-panel"><p className="eyebrow">Motifs</p><h2 className="growth-title">反复回到画面里的事物</h2><div className="motif-cloud justify-start">{motifs.map(({ motif, count }) => <span key={motif}><Sparkles size={13} />{motif}<small>{count}</small></span>)}</div></section>
     </div>
-  );
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <PixelPanel className="text-center">
-      <Icon className="w-6 h-6 mx-auto text-et-gold mb-2" />
-      <div className="text-xs text-et-muted">{label}</div>
-      <div className="font-number text-2xl">{value}</div>
-    </PixelPanel>
   );
 }

@@ -1,36 +1,30 @@
 import { useState, useMemo } from 'react';
-import type { Chapter, JournalEntry, Tile } from '@/types/game';
+import type { Chapter, JournalEntry } from '@/types/game';
 import { PixelButton } from '@/components/ui/PixelButton';
 import { PixelPanel } from '@/components/ui/PixelPanel';
-import { MapEditor } from './MapEditor';
 
 interface ChapterEditorProps {
   chapters: Chapter[];
   entries: JournalEntry[];
-  manualTiles?: Record<string, Tile[]>;
   onUpdateChapter: (chapter: Chapter) => void;
   onDeleteChapter: (id: string) => void;
   onCreateChapter: (chapter: Omit<Chapter, 'id' | 'unlockedAt'>) => void;
   onMoveEntry: (payload: { entryId: string; fromChapterId: string; toChapterId: string }) => void;
   onReorderEntries: (chapterId: string, entryIds: string[]) => void;
-  onSetChapterTiles?: (chapterId: string, tiles: Tile[]) => void;
   onClose: () => void;
 }
 
 export function ChapterEditor({
   chapters,
   entries,
-  manualTiles,
   onUpdateChapter,
   onDeleteChapter,
   onCreateChapter,
   onMoveEntry,
   onReorderEntries,
-  onSetChapterTiles,
   onClose,
 }: ChapterEditorProps) {
   const [selectedId, setSelectedId] = useState<string | null>(chapters[0]?.id ?? null);
-  const [activeTab, setActiveTab] = useState<'chapter' | 'map'>('chapter');
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newSubtitle, setNewSubtitle] = useState('');
@@ -39,13 +33,6 @@ export function ChapterEditor({
     () => chapters.find((c) => c.id === selectedId),
     [chapters, selectedId]
   );
-
-  const chapterEntries = useMemo(() => {
-    if (!selectedChapter) return [];
-    return selectedChapter.entryIds
-      .map((id) => entries.find((e) => e.id === id))
-      .filter((e): e is JournalEntry => !!e);
-  }, [entries, selectedChapter]);
 
   const unassignedEntries = useMemo(() => {
     const assignedIds = new Set(chapters.flatMap((c) => c.entryIds));
@@ -166,33 +153,7 @@ export function ChapterEditor({
           <div className="flex-1 overflow-auto min-w-0">
             {selectedChapter ? (
               <div className="space-y-4">
-                <div className="flex gap-2 border-b border-et-border pb-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('chapter')}
-                    className={`text-sm px-3 py-1 rounded border ${
-                      activeTab === 'chapter'
-                        ? 'border-et-gold bg-et-gold/10 text-et-gold'
-                        : 'border-et-border/50 text-et-muted hover:border-et-gold/60'
-                    }`}
-                  >
-                    章节内容
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('map')}
-                    className={`text-sm px-3 py-1 rounded border ${
-                      activeTab === 'map'
-                        ? 'border-et-gold bg-et-gold/10 text-et-gold'
-                        : 'border-et-border/50 text-et-muted hover:border-et-gold/60'
-                    }`}
-                  >
-                    地图编辑
-                  </button>
-                </div>
-
-                {activeTab === 'chapter' ? (
-                  <div className="space-y-4">
+                <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm text-et-muted">标题</label>
                   <input
@@ -336,14 +297,6 @@ export function ChapterEditor({
                   </PixelButton>
                 </div>
               </div>
-            ) : (
-              <MapEditor
-                chapterId={selectedChapter.id}
-                entries={chapterEntries}
-                manualTiles={manualTiles?.[selectedChapter.id] ?? []}
-                onChange={(tiles) => onSetChapterTiles?.(selectedChapter.id, tiles)}
-              />
-            )}
           </div>
         ) : (
           <div className="text-et-muted text-sm">选择一个章节进行编辑。</div>

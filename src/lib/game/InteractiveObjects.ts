@@ -516,6 +516,7 @@ export function drawSaveBench(
 }
 
 function interactRadiusFor(type: 'waypoint' | 'collectible' | 'bench'): number {
+  void type;
   return INTERACT_RADIUS;
 }
 

@@ -39,6 +39,12 @@ export function EventCard({ entry, compact }: EventCardProps) {
 
       <div className="p-3 space-y-2">
         <div className="text-xs text-et-muted font-number">{entry.date}</div>
+        <div className="flex flex-wrap gap-1">
+          <span className={`text-[10px] px-2 py-0.5 rounded-full ${entry.visibility === 'story' ? 'bg-et-gold/15 text-et-gold' : 'bg-white/5 text-et-muted'}`}>
+            {entry.visibility === 'story' ? '故事素材' : '仅自己可见'}
+          </span>
+          {entry.signals?.motifs?.slice(0, 3).map((motif) => <span key={motif} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-et-muted">{motif}</span>)}
+        </div>
         <p className="text-sm leading-relaxed whitespace-pre-wrap">
           {entry.text}
         </p>

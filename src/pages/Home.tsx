@@ -1,118 +1,72 @@
 import { Link } from 'react-router-dom';
+import { ArrowRight, BookOpen, Compass, Feather, Sparkles } from 'lucide-react';
 import { useGameStore } from '@/store/useGameStore';
 import { ProfileCreator } from '@/components/ProfileCreator';
-import { PixelButton } from '@/components/ui/PixelButton';
-import { PixelPanel } from '@/components/ui/PixelPanel';
 import { EventCard } from '@/components/EventCard';
-import { MOODS } from '@/lib/moods';
-import { Footprints, Sparkles, Trophy } from 'lucide-react';
+import { StorybookPreview } from '@/components/StorybookPreview';
+import { collectMotifs } from '@/lib/narrativeEngine';
 
 export default function Home() {
-  const profile = useGameStore((s) => s.profile);
-  const entries = useGameStore((s) => s.entries);
-  const unlocked = useGameStore((s) => s.unlockedAchievements);
-  const initProfile = useGameStore((s) => s.initProfile);
+  const profile = useGameStore((state) => state.profile);
+  const entries = useGameStore((state) => state.entries);
+  const projects = useGameStore((state) => state.storyProjects);
+  const initProfile = useGameStore((state) => state.initProfile);
 
-  if (!profile) {
-    return <ProfileCreator onCreate={initProfile} />;
-  }
+  if (!profile) return <ProfileCreator onCreate={initProfile} />;
 
-  const recent = entries.slice(-3).reverse();
-  const moodCounts: Record<string, number> = {};
-  entries.forEach((e) => {
-    moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1;
-  });
-  const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
+  const recent = entries.at(-1);
+  const activeProject = [...projects].sort((a, b) => b.updatedAt - a.updatedAt)[0];
+  const motifs = collectMotifs(entries).slice(0, 5);
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
-      <section className="flex flex-col md:flex-row gap-4">
-        <PixelPanel className="flex-1">
-          <h2 className="font-display text-2xl text-et-gold mb-1">
-            欢迎回来，{profile.nickname}
-          </h2>
-          <p className="text-sm text-et-muted">"每个人的一生都是一场独特的旅行"</p>
-          <div className="flex gap-3 mt-4">
-            <Link to="/journal">
-              <PixelButton>今日打卡</PixelButton>
-            </Link>
-            <Link to="/map">
-              <PixelButton variant="secondary">查看地图</PixelButton>
-            </Link>
+    <div className="page-stack pb-24 md:pb-8">
+      <header className="today-hero page-hero">
+        <div className="today-copy">
+          <p className="eyebrow">Today · {new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })}</p>
+          <h1>欢迎回来，{profile.nickname}</h1>
+          <p>先把今天留在这里。它不必完整，也不必立刻成为一个故事。</p>
+          <div className="hero-actions">
+            <Link to="/journal" className="story-button"><Feather size={17} /> 写下今天</Link>
+            <Link to="/map" className="story-button secondary"><Compass size={17} /> 继续旅程</Link>
           </div>
-        </PixelPanel>
+        </div>
+        <div className="today-landscape" aria-hidden="true">
+          <span className="sun" />
+          <span className="hill far" />
+          <span className="hill near" />
+          <span className="traveler">✦</span>
+        </div>
+      </header>
 
-        <PixelPanel className="md:w-72 grid grid-cols-2 gap-3">
-          <Stat icon={Sparkles} label="等级" value={`Lv.${profile.level}`} />
-          <Stat icon={Footprints} label="连续打卡" value={`${profile.streak} 天`} />
-          <Stat icon={Trophy} label="成就" value={`${unlocked.length}`} />
-          <Stat
-            icon={Sparkles}
-            label="记录数"
-            value={`${entries.length}`}
-          />
-        </PixelPanel>
+      <section className="today-grid">
+        <article className="storybook-panel daily-prompt">
+          <p className="eyebrow">A gentle prompt</p>
+          <h2>今天，有什么瞬间值得被轻轻放大？</h2>
+          <p>可以是一句话、一张照片，或一个你想记住的地点。</p>
+          <Link to="/journal" className="text-link">进入私密记录室 <ArrowRight size={15} /></Link>
+        </article>
+
+        <article className="storybook-panel quiet-stats">
+          <div><Sparkles /><strong>{entries.length}</strong><span>段记忆</span></div>
+          <div><BookOpen /><strong>{projects.length}</strong><span>部作品</span></div>
+          <div><Compass /><strong>{motifs.length}</strong><span>种意象</span></div>
+        </article>
       </section>
 
-      <section className="grid md:grid-cols-3 gap-4">
-        <PixelPanel className="md:col-span-2">
-          <h3 className="font-display text-lg mb-3">最近旅程</h3>
-          {recent.length === 0 ? (
-            <p className="text-et-muted text-sm">还没有记录，写下第一段旅程吧。</p>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {recent.map((entry) => (
-                <EventCard key={entry.id} entry={entry} compact />
-              ))}
-            </div>
-          )}
-        </PixelPanel>
+      <section className="section-heading"><div><p className="eyebrow">Continue</p><h2>{activeProject ? '继续编排你的故事' : '让第一段记录成为故事'}</h2></div><Link to="/studio" className="text-link">打开工坊 <ArrowRight size={15} /></Link></section>
 
-        <PixelPanel>
-          <h3 className="font-display text-lg mb-3">状态</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-et-muted">总里程</span>
-              <span className="font-number text-et-gold">{entries.length} 步</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-et-muted">当前心情主题</span>
-              <span>
-                {topMood ? (
-                  <>
-                    {MOODS[topMood[0] as keyof typeof MOODS].emoji}{' '}
-                    {MOODS[topMood[0] as keyof typeof MOODS].label}
-                  </>
-                ) : (
-                  '—'
-                )}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-et-muted">经验值</span>
-              <span className="font-number">{Math.floor(profile.xp)}</span>
-            </div>
-          </div>
-        </PixelPanel>
-      </section>
-    </div>
-  );
-}
+      {activeProject ? (
+        <div className="home-story-grid">
+          <StorybookPreview project={activeProject} entries={entries} compact />
+          <aside className="storybook-panel project-note"><span className="project-index">{String(activeProject.scenes.length).padStart(2, '0')}</span><h3>{activeProject.title}</h3><p>{activeProject.description || activeProject.subtitle}</p><Link to="/studio" className="story-button">继续编辑</Link></aside>
+        </div>
+      ) : (
+        <div className="storybook-panel empty-inline"><div><h3>你的故事工坊还是空的</h3><p>先将记录标记为“可作为故事素材”，再决定公开哪些摘录和图片。</p></div><Link to="/studio" className="story-button">了解如何开始</Link></div>
+      )}
 
-function Stat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="text-center">
-      <Icon className="w-5 h-5 mx-auto text-et-gold mb-1" />
-      <div className="text-xs text-et-muted">{label}</div>
-      <div className="font-number text-lg">{value}</div>
+      {recent && (
+        <section><div className="section-heading"><div><p className="eyebrow">Latest memory</p><h2>最近记录</h2></div><Link to={`/journal/${recent.id}`} className="text-link">编辑记录 <ArrowRight size={15} /></Link></div><div className="max-w-2xl"><EventCard entry={recent} /></div></section>
+      )}
     </div>
   );
 }

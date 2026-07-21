@@ -23,11 +23,13 @@ export default function Journal() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto pb-20 md:pb-0">
-      <h2 className="font-display text-2xl text-et-gold mb-4">
-        {isEditing ? '编辑旅程' : '记录今日旅程'}
-      </h2>
-      <PixelPanel>
+    <div className="max-w-5xl mx-auto pb-24 md:pb-8 page-stack">
+      <header className="page-hero compact-hero">
+        <p className="eyebrow">Private Journal Room</p>
+        <h1>{isEditing ? '编辑这段记忆' : '私密记录室'}</h1>
+        <p>原始文字默认只保存在本机。只有明确设为故事素材并加入作品的内容才会被导出。</p>
+      </header>
+      <PixelPanel className="storybook-panel">
         <EntryForm
           initial={editingEntry}
           onSubmit={handleSubmit}

@@ -20,6 +20,7 @@ export interface ToolResult {
   destroyedTile?: Tile;
   spawnedCollectible?: Collectible;
   message?: string;
+  affectedTiles?: Tile[];
 }
 
 export interface ToolContext {
@@ -224,7 +225,7 @@ function digJoy(player: PlayerState, target: Tile, context: ToolContext): ToolRe
   context.particles?.emit('debris', px, py, 6);
   context.particles?.emit('sparkle', px, py, 4);
 
-  return { consumed: true, destroyedTile: target, spawnedCollectible: shard };
+  return { consumed: true, destroyedTile: target, spawnedCollectible: shard, affectedTiles: [target] };
 }
 
 function digSad(player: PlayerState, target: Tile, context: ToolContext): ToolResult {
@@ -236,13 +237,13 @@ function digSad(player: PlayerState, target: Tile, context: ToolContext): ToolRe
     target.type = 'gap';
     target.solid = false;
     context.particles?.emit('rain', px, py, 10);
-    return { consumed: true, message: '雨铲排开了水流' };
+    return { consumed: true, message: '雨铲排开了水流', affectedTiles: [target] };
   }
 
   if (target.type === 'raincurtain') {
     destroyTile(target);
     context.particles?.emit('rain', px, py, 8);
-    return { consumed: true, message: '雨幕在你面前散开' };
+    return { consumed: true, message: '雨幕在你面前散开', affectedTiles: [target] };
   }
 
   // 尝试在缺口中引水（仅当下方有实体时）。
@@ -252,7 +253,7 @@ function digSad(player: PlayerState, target: Tile, context: ToolContext): ToolRe
       target.type = 'water';
       target.solid = false;
       context.particles?.emit('rain', px, py, 10);
-      return { consumed: true, message: '雨铲引来一缕积水' };
+      return { consumed: true, message: '雨铲引来一缕积水', affectedTiles: [target] };
     }
   }
 
@@ -267,11 +268,13 @@ function digAngry(player: PlayerState, target: Tile, context: ToolContext): Tool
 
   player.toolEnergy = Math.max(0, player.toolEnergy - ENERGY_COSTS.angry);
   let destroyed = 0;
+  const affectedTiles: Tile[] = [];
 
   // 若目标是普通可挖掘方块，直接粉碎它。
   if (targetDiggable && target.type !== 'brittle') {
     destroyTile(target);
     destroyed++;
+    affectedTiles.push(target);
     const px = target.x + TILE_SIZE / 2;
     const py = target.y + TILE_SIZE / 2;
     context.particles?.emit('ember', px, py, 6);
@@ -287,6 +290,7 @@ function digAngry(player: PlayerState, target: Tile, context: ToolContext): Tool
     if (dist <= TILE_SIZE * 2.5) {
       destroyTile(tile);
       destroyed++;
+      affectedTiles.push(tile);
       const px = tile.x + TILE_SIZE / 2;
       const py = tile.y + TILE_SIZE / 2;
       context.particles?.emit('ember', px, py, 6);
@@ -297,7 +301,7 @@ function digAngry(player: PlayerState, target: Tile, context: ToolContext): Tool
   }
 
   if (destroyed > 0) {
-    return { consumed: true, message: `碎岩锤震裂了 ${destroyed} 块岩石` };
+    return { consumed: true, message: `碎岩锤震裂了 ${destroyed} 块岩石`, affectedTiles };
   }
   return { consumed: false };
 }
@@ -314,7 +318,7 @@ function digAnxious(player: PlayerState, target: Tile, context: ToolContext): To
   context.particles?.emit('dust', px, py, 10);
   context.particles?.emit('sparkle', px, py, 6);
 
-  return { consumed: true, destroyedTile: target };
+  return { consumed: true, destroyedTile: target, affectedTiles: [target] };
 }
 
 function digCalm(player: PlayerState, _target: Tile, context: ToolContext): ToolResult {
@@ -347,7 +351,7 @@ function digTired(player: PlayerState, target: Tile, context: ToolContext): Tool
   const py = target.y + TILE_SIZE / 2;
   context.particles?.emit('leaf', px, py, 8);
 
-  return { consumed: true, destroyedTile: target, message: '根须 platform 为你托起片刻安宁' };
+  return { consumed: true, destroyedTile: target, message: '根须 platform 为你托起片刻安宁', affectedTiles: [target] };
 }
 
 export function canUseTool(form: Mood): { ok: boolean; reason?: string } {

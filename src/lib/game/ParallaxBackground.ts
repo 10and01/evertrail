@@ -112,7 +112,7 @@ export class BackgroundSystem {
 
     this.layers = [
       this.createStarLayer(viewWidth),
-      this.createNebulaLayer(viewWidth, viewHeight),
+      this.createNebulaLayer(viewWidth),
       this.createMountainLayer(viewWidth, viewHeight, palette.groundDeep, 0.1, viewHeight * 0.72),
       this.createMountainLayer(viewWidth, viewHeight, palette.groundBody, 0.25, viewHeight * 0.8),
       this.createMistLayer(viewWidth, viewHeight, 0.35),
@@ -165,7 +165,7 @@ export class BackgroundSystem {
     };
   }
 
-  private createNebulaLayer(viewWidth: number, viewHeight: number): ParallaxLayer {
+  private createNebulaLayer(viewWidth: number): ParallaxLayer {
     return {
       parallaxFactor: 0.03,
       scrollSpeed: 0,
@@ -351,7 +351,7 @@ export class BackgroundSystem {
 
     // 夜晚在最前景云层之前绘制流星。
     if (isNight && !reduceMotion) {
-      this.drawShootingStars(ctx, camera, viewWidth, viewHeight, time);
+      this.drawShootingStars(ctx, camera, viewWidth, viewHeight);
     }
 
     // Clouds drift independently (夜晚减少可见度），可能遮挡月亮。
@@ -456,8 +456,7 @@ export class BackgroundSystem {
     ctx: CanvasRenderingContext2D,
     camera: CameraState,
     viewWidth: number,
-    viewHeight: number,
-    time: number
+    viewHeight: number
   ) {
     const safeCameraX = Number.isFinite(camera.x) ? camera.x : 0;
 

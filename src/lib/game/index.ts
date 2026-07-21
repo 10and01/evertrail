@@ -7,6 +7,7 @@ export * from './BiomeRenderer';
 export * from './ParticleSystem';
 export * from './InteractiveObjects';
 export * from './tools';
+export * from './session';
 export { SaveBenchEntity, CraftingFurnaceEntity } from './Entity';
 export * from './AudioManager';
 export { default as MobileControls } from './MobileControls';

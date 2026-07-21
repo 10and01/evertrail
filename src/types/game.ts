@@ -39,6 +39,10 @@ export interface JournalEntry {
   rarity: number;
   createdAt: number;
   updatedAt: number;
+  /** 私密记录室字段；旧存档缺失时由迁移层补齐。 */
+  visibility?: import('./narrative').EntryVisibility;
+  personalMeaning?: string;
+  signals?: import('./narrative').NarrativeSignals;
 }
 
 export interface MapNode {
@@ -312,6 +316,7 @@ export interface AchievementDef {
 }
 
 export interface GameState {
+  schemaVersion: number;
   profile: Profile | null;
   entries: JournalEntry[];
   nodes: MapNode[];
@@ -324,7 +329,8 @@ export interface GameState {
   unlockedAchievements: string[];
   /** 当前游戏中手动切换到的章节。 */
   activeChapterId: string | null;
-  /** 按章节保存的手动地图编辑瓦片（key 为 chapterId）。 */
-  manualTiles: Record<string, Tile[]>;
+  themeProfile: import('./narrative').ThemeProfile;
+  storyProjects: import('./narrative').StoryProject[];
+  journeyProgress: import('./life').JourneyProgress;
   loaded: boolean;
 }

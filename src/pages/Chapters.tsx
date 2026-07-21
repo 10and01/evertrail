@@ -13,7 +13,6 @@ export default function Chapters() {
   const entries = useGameStore((s) => s.entries);
   const manualChapters = useGameStore((s) => s.manualChapters);
   const activeChapterId = useGameStore((s) => s.activeChapterId);
-  const manualTiles = useGameStore((s) => s.manualTiles);
   const [playing, setPlaying] = useState<Chapter | null>(null);
   const [editing, setEditing] = useState(false);
   const navigate = useNavigate();
@@ -24,7 +23,6 @@ export default function Chapters() {
   const moveEntry = useGameStore((s) => s.moveEntry);
   const reorderChapterEntries = useGameStore((s) => s.reorderChapterEntries);
   const setActiveChapter = useGameStore((s) => s.setActiveChapter);
-  const setChapterTiles = useGameStore((s) => s.setChapterTiles);
 
   const getEntries = (chapter: Chapter) => {
     return chapter.entryIds
@@ -74,13 +72,11 @@ export default function Chapters() {
         <ChapterEditor
           chapters={manualChapters.length > 0 ? manualChapters : chapters}
           entries={entries}
-          manualTiles={manualTiles}
           onUpdateChapter={updateChapter}
           onDeleteChapter={deleteChapter}
           onCreateChapter={createChapter}
           onMoveEntry={moveEntry}
           onReorderEntries={reorderChapterEntries}
-          onSetChapterTiles={setChapterTiles}
           onClose={() => setEditing(false)}
         />
       )}

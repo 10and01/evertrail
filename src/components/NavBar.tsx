@@ -1,15 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Home, Map, Share2, Trophy } from 'lucide-react';
+import { BookOpen, Footprints, Images, Map, Settings, Trophy } from 'lucide-react';
+import { BrandMark } from '@/components/BrandMark';
 import { useGameStore } from '@/store/useGameStore';
 import { cn } from '@/lib/utils';
 
 const links = [
-  { to: '/', label: '大厅', icon: Home },
-  { to: '/journal', label: '记录', icon: BookOpen },
-  { to: '/map', label: '地图', icon: Map },
-  { to: '/chapters', label: '章节', icon: BookOpen },
+  { to: '/', label: '今天', icon: Footprints },
+  { to: '/map', label: '旅程', icon: Map },
+  { to: '/studio', label: '故事工坊', icon: BookOpen },
+  { to: '/gallery', label: '展厅', icon: Images },
   { to: '/growth', label: '成长', icon: Trophy },
-  { to: '/export', label: '导出', icon: Share2 },
+  { to: '/settings', label: '设置', icon: Settings },
 ];
 
 export function NavBar() {
@@ -19,13 +20,13 @@ export function NavBar() {
   return (
     <header className="sticky top-0 z-50 border-b-2 border-et-border bg-et-panel/90 backdrop-blur">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="font-display text-xl text-et-gold">
-          Evertrail
+        <Link to="/" className="brand-lockup">
+          <BrandMark />
         </Link>
         <nav className="hidden md:flex items-center gap-1">
           {links.map((link) => {
             const Icon = link.icon;
-            const active = pathname === link.to;
+            const active = link.to === '/' ? pathname === '/' : pathname.startsWith(link.to);
             return (
               <Link
                 key={link.to}
@@ -43,7 +44,6 @@ export function NavBar() {
         </nav>
         {profile && (
           <div className="flex items-center gap-2 text-sm font-number">
-            <span className="text-et-muted">Lv.{profile.level}</span>
             <span className="text-et-gold">{profile.nickname}</span>
           </div>
         )}

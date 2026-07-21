@@ -1,116 +1,61 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { AlertTriangle, Download, FileImage, ShieldCheck } from 'lucide-react';
 import { useGameStore } from '@/store/useGameStore';
-import { PixelPanel } from '@/components/ui/PixelPanel';
-import { PixelButton } from '@/components/ui/PixelButton';
-import { buildShareHTML, type ExportBundleData } from '@/lib/exportBuilder';
-import { loadGame } from '@/lib/storage';
-import { Download, Share2, Loader2 } from 'lucide-react';
+import { buildStoryPackage } from '@/lib/narrativeEngine';
+import { buildStoryHTML, buildStoryPoster } from '@/lib/exportBuilder';
+import { StorybookPreview } from '@/components/StorybookPreview';
 
 export default function Export() {
-  const profile = useGameStore((s) => s.profile);
-  const gameState = useGameStore((s) => s);
-  const markStoryteller = useGameStore((s) => s.markStoryteller);
+  const [params] = useSearchParams();
+  const projects = useGameStore((state) => state.storyProjects);
+  const entries = useGameStore((state) => state.entries);
+  const markStoryteller = useGameStore((state) => state.markStoryteller);
+  const [projectId, setProjectId] = useState(params.get('project') ?? projects[0]?.id ?? '');
+  const [error, setError] = useState('');
+  const project = projects.find((item) => item.id === projectId) ?? projects[0];
+  const packageData = useMemo(() => project ? buildStoryPackage(project, entries) : null, [project, entries]);
 
-  const [title, setTitle] = useState(`${profile?.nickname || '我'} 的 Evertrail`);
-  const [url, setUrl] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const downloadHtml = () => {
+    if (!packageData) return;
+    const blob = new Blob([buildStoryHTML(packageData)], { type: 'text/html;charset=utf-8' });
+    downloadBlob(blob, `${safeName(packageData.project.title)}.html`);
+    markStoryteller();
+  };
 
-  if (!profile) return null;
-
-  const generate = async () => {
-    setGenerating(true);
-    setError(null);
+  const downloadPoster = async () => {
+    if (!packageData) return;
+    setError('');
     try {
-      const save = (await loadGame()) || {
-        nodeId: '',
-        x: 0,
-        y: 0,
-        light: 100,
-        inventory: { items: [], crafted: [], equippedTrinkets: [] },
-        activatedWaypoints: [],
-        collectedCollectibles: [],
-        savedAt: Date.now(),
-      };
-
-      const data: ExportBundleData = {
-        gameState: {
-          profile: gameState.profile,
-          entries: gameState.entries,
-          nodes: gameState.nodes,
-          chapters: gameState.chapters,
-          manualChapters: gameState.manualChapters,
-          hiddenChapters: gameState.hiddenChapters,
-          talkedEchoIds: gameState.talkedEchoIds,
-          unlockedHiddenChapterIds: gameState.unlockedHiddenChapterIds,
-          unlockedAchievements: gameState.unlockedAchievements,
-          activeChapterId: gameState.activeChapterId,
-          manualTiles: gameState.manualTiles,
-          loaded: true,
-        },
-        save,
-      };
-
-      const html = await buildShareHTML(title, data);
-      const blob = new Blob([html], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
-      setUrl(blobUrl);
+      downloadBlob(await buildStoryPoster(packageData), `${safeName(packageData.project.title)}-long.png`);
       markStoryteller();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '生成失败');
-    } finally {
-      setGenerating(false);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '长图生成失败');
     }
   };
 
-  const download = () => {
-    if (!url) return;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `evertrail-${Date.now()}.html`;
-    a.click();
-  };
+  if (!project || !packageData) return <div className="empty-story storybook-panel max-w-2xl mx-auto"><h1>还没有可导出的作品</h1><p>导出不再包含整份私人存档。请先在故事工坊中创建作品。</p><Link to="/studio" className="story-button">进入故事工坊</Link></div>;
 
   return (
-    <div className="max-w-2xl mx-auto pb-24 md:pb-0">
-      <h2 className="font-display text-2xl text-et-gold mb-4">导出分享包</h2>
-      <PixelPanel className="space-y-4">
-        <div>
-          <label className="block text-sm text-et-muted mb-1">分享标题</label>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full" />
-        </div>
-
-        <div className="text-sm text-white/70 leading-relaxed">
-          <p>导出的文件包含完整的游戏数据（日记、地图、章节、小屋布置与当前存档）。</p>
-          <p>接收者直接用浏览器打开该 HTML 即可进入你的 Evertrail 世界。</p>
-        </div>
-
-        <div className="flex gap-3">
-          <PixelButton onClick={generate} disabled={generating} className="flex-1">
-            {generating ? (
-              <Loader2 className="w-4 h-4 mr-1 inline animate-spin" />
-            ) : (
-              <Share2 className="w-4 h-4 mr-1 inline" />
-            )}
-            生成网页游戏包
-          </PixelButton>
-          {url && (
-            <PixelButton variant="secondary" onClick={download}>
-              <Download className="w-4 h-4 mr-1 inline" />
-              下载
-            </PixelButton>
-          )}
-        </div>
-
-        {error && <p className="text-sm text-red-400">{error}</p>}
-
-        {url && (
-          <div className="text-sm text-et-muted">
-            <p>已生成独立的 HTML 文件，可发送给朋友直接打开游玩。</p>
-            <p className="mt-1">当前为公开分享，任何人拿到文件均可查看内容。</p>
-          </div>
-        )}
-      </PixelPanel>
+    <div className="page-stack pb-24 md:pb-8">
+      <header className="page-hero compact-hero"><p className="eyebrow">Privacy Preview</p><h1>预览与导出</h1><p>这里看到的内容，就是离线作品中会出现的全部内容。</p></header>
+      <div className="export-layout">
+        <main><StorybookPreview project={project} entries={entries} /></main>
+        <aside className="storybook-panel export-sidebar">
+          <label className="field-label">选择作品</label>
+          <select value={project.id} onChange={(event) => setProjectId(event.target.value)}>{projects.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
+          <div className="privacy-summary"><ShieldCheck /><div><strong>隐私检查通过</strong><p>将导出 {packageData.entries.length} 个场景、{packageData.entries.filter((entry) => entry.image).length} 张明确选择的图片。</p></div></div>
+          <ul className="privacy-list"><li>不包含私人原文之外的隐藏字段</li><li>不包含私人标签和个人意义</li><li>不包含游戏存档、背包与小屋</li><li>接收者无需联网即可浏览</li></ul>
+          {packageData.entries.length === 0 && <p className="warning"><AlertTriangle size={16} />当前作品没有可公开场景。</p>}
+          <button type="button" className="story-button w-full" onClick={downloadHtml} disabled={!packageData.entries.length}><Download size={17} />下载互动 HTML</button>
+          <button type="button" className="story-button secondary w-full" onClick={downloadPoster} disabled={!packageData.entries.length}><FileImage size={17} />下载故事长图</button>
+          <Link to="/studio" className="text-link">返回工坊调整公开内容</Link>
+          {error && <p className="warning">{error}</p>}
+        </aside>
+      </div>
     </div>
   );
 }
+
+function safeName(name: string) { return name.replace(/[\\/:*?"<>|]/g, '-').slice(0, 60) || 'evertrail-story'; }
+function downloadBlob(blob: Blob, filename: string) { const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }

@@ -7,6 +7,9 @@ import MapPage from '@/pages/Map';
 import Chapters from '@/pages/Chapters';
 import Growth from '@/pages/Growth';
 import Export from '@/pages/Export';
+import Studio from '@/pages/Studio';
+import Gallery from '@/pages/Gallery';
+import Preferences from '@/pages/Preferences';
 import { useGameStore } from '@/store/useGameStore';
 import { loadState } from '@/lib/storage';
 
@@ -46,8 +49,11 @@ function AppInitializer() {
         <Route path="map" element={<MapPage />} />
         <Route path="chapters" element={<Chapters />} />
         <Route path="chapters/:chapterId" element={<Chapters />} />
-        <Route path="growth" element={<Growth />} />
-        <Route path="export" element={<Export />} />
+      <Route path="growth" element={<Growth />} />
+      <Route path="studio" element={<Studio />} />
+      <Route path="gallery" element={<Gallery />} />
+      <Route path="settings" element={<Preferences />} />
+      <Route path="export" element={<Export />} />
       </Route>
     </Routes>
   );

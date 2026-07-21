@@ -5,6 +5,7 @@ import './index.css';
 import { saveState } from './lib/storage';
 import { saveGame } from './lib/storage';
 import type { ExportBundleData } from './lib/exportBuilder';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 
 async function init() {
   const embedded = (window as unknown as Record<string, unknown>).__EVERTRAIL_DATA__ as
@@ -18,7 +19,6 @@ async function init() {
         await saveGame(embedded.save);
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('Failed to load embedded Evertrail data:', e);
     }
     delete (window as unknown as Record<string, unknown>).__EVERTRAIL_DATA__;
@@ -26,7 +26,9 @@ async function init() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <App />
+      <AppErrorBoundary>
+        <App />
+      </AppErrorBoundary>
     </StrictMode>,
   );
 }

@@ -1,0 +1,11 @@
+<svg width="720" height="200" viewBox="0 0 720 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="200" rx="38" fill="#14241E"/>
+  <g transform="translate(42 24)">
+    <path d="M26 120C18 107 18 85 27 71C37 55 59 52 74 62C80 66 84 72 85 78C75 70 65 66 54 67C42 68 34 75 31 85C28 95 30 108 36 115C46 126 63 127 77 118C70 130 54 135 40 130C34 128 29 125 26 120Z" fill="#355F50"/>
+    <path d="M72 62C58 58 40 61 32 72C23 84 25 104 35 116C45 126 62 126 75 117M30 90C40 85 51 85 62 89" stroke="#EFBD78" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="31" cy="90" r="3" fill="#F9E8C9"/>
+    <path d="M76 51L80 59L88 63L80 67L76 75L72 67L64 63L72 59L76 51Z" fill="#F7D69B"/>
+  </g>
+  <text x="170" y="104" fill="#F4ECDD" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" letter-spacing="1">Evertrail</text>
+  <text x="174" y="137" fill="#EFBD78" font-family="Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="5">MEMORY SHAPES THE WORLD</text>
+</svg>

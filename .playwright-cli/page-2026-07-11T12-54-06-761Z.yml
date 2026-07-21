@@ -1,0 +1,61 @@
+- main [ref=e2]:
+  - region "音频云朵控制台" [ref=e4]:
+    - generic [ref=e7]:
+      - text: 声音驱动的天空
+      - heading "Cloud Resonance" [level=1] [ref=e8]
+      - paragraph [ref=e9]: 选择一段音频，让天空开始呼吸
+    - generic "播放控制" [ref=e10]:
+      - button "导入音频" [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]: ↥
+      - button "演示" [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]: ◈
+      - button "播放或暂停" [disabled] [ref=e17]:
+        - generic [ref=e18]: ▶
+      - button "Switch to English" [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]: ◎
+        - generic [ref=e21]: EN
+  - region "拖拽音频文件到此处":
+    - generic:
+      - generic: 实时音频气象
+      - paragraph: 把音乐拖进天空
+      - generic: 低频推动云体扩张，瞬态触发冲击波，音色情绪会改变天空色彩。
+      - generic:
+        - generic: 支持 MP3 · WAV · M4A
+        - generic: 拖动天空可旋转视角
+  - region "视觉参数" [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - text: 频谱控制台
+        - strong [ref=e25]: 声音与云层响应
+      - generic [ref=e26]: 实时分析
+    - generic [ref=e27]:
+      - generic [ref=e28]: 0:00
+      - slider [disabled] [ref=e29]: "0"
+      - generic [ref=e30]: 0:00
+    - generic [ref=e31]:
+      - generic [ref=e32]: 低频
+      - generic [ref=e33]: 中频
+      - generic [ref=e34]: 高频
+      - generic [ref=e35]: 能量
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - text: 音量
+          - status "音量 0.82" [ref=e41]: 82%
+        - slider [ref=e42] [cursor=pointer]: "0.82"
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - text: 强度
+          - status "强度 1.45" [ref=e45]: 1.45×
+        - slider [ref=e46] [cursor=pointer]: "1.45"
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - text: 灵敏度
+          - status "灵敏度 1.75" [ref=e49]: 1.75×
+        - slider [ref=e50] [cursor=pointer]: "1.75"
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - text: 云量
+          - status "云量 0.92" [ref=e53]: 92%
+        - slider [ref=e54] [cursor=pointer]: "0.92"
+  - status
